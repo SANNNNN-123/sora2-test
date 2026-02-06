@@ -1,0 +1,83 @@
+"""
+Sora-2 Text-to-Video Generation Sample
+
+This script demonstrates how to use the Azure OpenAI Sora-2 model to generate videos
+from text prompts. Sora-2 is a state-of-the-art AI model that creates realistic and
+imaginative video content based on natural language descriptions.
+
+Requirements:
+    - Python 3.7+
+    - openai library (install via: pip install openai)
+    - python-dotenv library (install via: pip install python-dotenv)
+    - Valid Azure OpenAI API key and endpoint in .env file
+
+Usage:
+    python sora2-text-to-video-sample.py
+
+Author: Microsoft Corporation
+Date: October 2025
+"""
+
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get configuration from environment variables
+api_key = os.getenv("AZURE_API_KEY")
+resource_name = os.getenv("AZURE_RESOURCE_NAME")
+model_name = os.getenv("AZURE_MODEL_NAME")
+
+if not api_key or not resource_name or not model_name:
+    raise ValueError(
+        "Missing required environment variables. "
+        "Please copy .env.sample to .env and populate with your values."
+    )
+
+base_url = f"https://{resource_name}/openai/v1/"
+client = OpenAI(
+    api_key=api_key,
+    base_url=base_url,
+)
+
+# Video generation parameters
+prompt = '''Elmo hosting a finance and investment seminar. Professional conference room. Suit and tie. Whiteboard behind him. Discussing stock portfolios and cryptocurrency. Serious financial tone. Elmo speaking professionally.'''
+
+size = "1280x720"
+seconds = "12"
+
+print("Sending video generation request to Azure OpenAI Sora-2...")
+print(f"Endpoint URL: {base_url}videos")
+print(f"Prompt: {prompt}")
+print(f"Duration: {seconds} seconds")
+print(f"Resolution: {size}")
+print("-" * 60)
+
+try:
+    video = client.videos.create(
+        model=model_name,
+        prompt=prompt,
+        size=size,
+        seconds=seconds,
+    )
+    
+    print("\n✓ Video generation started successfully!")
+    print(f"\nVideo Generation Details:")
+    print(f"  Video ID: {video.id}")
+    print(f"  Status: {video.status}")
+    print(f"  Model: {video.model}")
+    print(f"  Created At: {video.created_at}")
+    print(f"\nNote: Video generation is an asynchronous process.")
+    print("The video may take several minutes to complete.")
+    print(f"You can check the status using: python sora2-video-creation-status.py {video.id}")
+    
+except Exception as e:
+    print(f"\n✗ Error: {e}")
+    print(f"Error type: {type(e).__name__}")
+    print("\nTroubleshooting:")
+    print("  - Verify your API key is correct")
+    print("  - Check that your Azure resource name is correct")
+    print("  - Ensure your Azure subscription has access to Sora-2")
+    print("  - Verify the prompt and parameters are valid")
